@@ -154,6 +154,7 @@ public class CalcEngine {
 			displayValue = leftOperand - displayValue;
 			haveLeftOperand = true;
 			leftOperand = displayValue;
+			displayValue = Math.abs(displayValue);
 			break;
 		default:
 			keySequenceError();
