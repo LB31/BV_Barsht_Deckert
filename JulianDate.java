@@ -72,6 +72,18 @@ public class JulianDate implements JulianDateInterface {
 		return this.gregYear;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see JulianDateInterface#getGregYear()
+	 */
+	@Override
+	public String getGregDate() {
+		String fullDate = getGregDay() + "." + getGregMonth() + "." + getGregYear();
+		
+		
+		return fullDate;
+	}
+	
 	public long daysSince(JulianDateInterface julianDate) {
 
 		return this.days-julianDate.getDays();
@@ -126,6 +138,12 @@ public class JulianDate implements JulianDateInterface {
 		return true;
 	}
 
+	
+	
+	public static void main(String[] args) {
+		JulianDate date = new JulianDate(50);
+		System.out.println(date.getGregYear());
+	}
 	
 	
 }

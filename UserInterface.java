@@ -58,7 +58,7 @@ public class UserInterface
         display = new JTextField();
         contentPane.add(display, BorderLayout.NORTH);
 
-        JPanel buttonPanel = new JPanel(new GridLayout(4, 4));
+        JPanel buttonPanel = new JPanel(new GridLayout(5, 4));
             addButton(buttonPanel, "7");
             addButton(buttonPanel, "8");
             addButton(buttonPanel, "9");
@@ -73,11 +73,16 @@ public class UserInterface
             addButton(buttonPanel, "2");
             addButton(buttonPanel, "3");
             addButton(buttonPanel, "Day");
-            
+
             addButton(buttonPanel, "0");
             addButton(buttonPanel, "+");
             addButton(buttonPanel, "-");
             addButton(buttonPanel, "=");
+
+            addButton(buttonPanel, ".");
+            addButton(buttonPanel, "G > J");
+            addButton(buttonPanel, "J > G");
+    		buttonPanel.add(new JLabel(" "));
             
         contentPane.add(buttonPanel, BorderLayout.CENTER);
 
@@ -139,6 +144,22 @@ public class UserInterface
         else if(command.equals("Day")) {
         	calc.getWeekDay();
         }
+        else if(command.equals(".")) {
+        	calc.dot();
+        }
+        
+        else if(command.equals("G > J")) {
+        	calc.parseDateIfNecessary();
+        }
+        
+        else if(command.equals("J > G")) {
+        	calc.julianToGregorian();
+        }
+        
+        else if(command.equals("Sub G")) {
+        	calc.julianToGregorian();
+        }
+        
         // else unknown command.
 
         redisplay();

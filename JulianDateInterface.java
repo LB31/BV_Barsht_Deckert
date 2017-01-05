@@ -19,4 +19,6 @@ public interface JulianDateInterface {
 	 */
 	String getWeekday();
 
+	String getGregDate();
+
 }

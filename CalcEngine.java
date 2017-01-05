@@ -1,5 +1,7 @@
 package info_2_ex_8;
 
+import java.util.GregorianCalendar;
+
 /**
  * The main part of the calculator doing the calculations.
  * 
@@ -24,7 +26,11 @@ public class CalcEngine {
 	private int leftOperand;
 
 	private String theDay;
-	private boolean day;
+	private boolean dayOnDisplay;
+
+	private String dateString;
+	private boolean buildingDate;
+	private boolean backToGreg;
 
 	/**
 	 * Create a CalcEngine.
@@ -38,8 +44,9 @@ public class CalcEngine {
 	 *         display.
 	 */
 	public String getDisplayValue() {
-		if (day) {
-			
+		if (dateString != "")
+			return dateString;
+		else if (dayOnDisplay) {
 			return theDay;
 		} else {
 			return "" + displayValue;
@@ -48,14 +55,17 @@ public class CalcEngine {
 	}
 
 	public void getWeekDay() {
-		if(!day){
-		theDay = new JulianDate(displayValue).getWeekday();
-		day = true;
-		
-		}else
-			day = false; 
-		
-		
+		if (!dayOnDisplay) {
+			if (dateString != "") {
+				parseDateIfNecessary();
+				backToGreg = true;
+			}
+			theDay = new JulianDate(displayValue).getWeekday();
+			dayOnDisplay = true;
+
+		} else{
+			if(backToGreg){ julianToGregorian();}
+			dayOnDisplay = false;}
 
 	}
 
@@ -67,13 +77,30 @@ public class CalcEngine {
 	 *            The number pressed on the calculator.
 	 */
 	public void numberPressed(int number) {
-		if (buildingDisplayValue) {
+		if (buildingDate) {
+			dateString += number;
+		} else if (buildingDisplayValue) {
 			// Incorporate this digit.
 			displayValue = displayValue * 10 + number;
 		} else {
 			// Start building a new number.
 			displayValue = number;
 			buildingDisplayValue = true;
+		}
+	}
+
+	public void dot() {
+		if (!buildingDisplayValue)
+			keySequenceError();
+
+		if (!buildingDate) {
+			dateString += displayValue;
+			dateString += ".";
+			displayValue = 0;
+			buildingDate = true;
+		} else {
+
+			dateString += ".";
 		}
 	}
 
@@ -99,12 +126,39 @@ public class CalcEngine {
 		// so ensure that we really have a left operand, an operator
 		// and a right operand.
 		if (haveLeftOperand && lastOperator != '?' && buildingDisplayValue) {
+//			parseDateIfNeccessary();
 			calculateResult();
 			lastOperator = '?';
 			buildingDisplayValue = false;
 		} else {
 			keySequenceError();
 		}
+	}
+
+	// converts gregorian date to julian date
+	public void parseDateIfNecessary() {
+		if (buildingDate) {
+			String[] date = dateString.split("\\.");
+			
+			if(date.length != 3)
+			{
+				dateError();
+				return;
+			}
+			
+			displayValue = (int) (new JulianDate(Integer.parseInt(date[0]), Integer.parseInt(date[1]),
+					Integer.parseInt(date[2]))).getDays();
+			dateString = "";
+			buildingDate = false;
+		}
+	}
+
+	// converts julian date to gregorian date
+	public void julianToGregorian() {
+		JulianDate newGreg = new JulianDate(displayValue);
+		dateString = newGreg.getGregDate();
+		displayValue = 0;
+		buildingDate = true;
 	}
 
 	/**
@@ -116,6 +170,9 @@ public class CalcEngine {
 		buildingDisplayValue = false;
 		displayValue = 0;
 		theDay = "";
+		dateString = "";
+		buildingDate = false;
+		dayOnDisplay = false;
 	}
 
 	/**
@@ -149,17 +206,42 @@ public class CalcEngine {
 			displayValue = leftOperand + displayValue;
 			haveLeftOperand = true;
 			leftOperand = displayValue;
+			if(backToGreg){
+				julianToGregorian();
+				backToGreg = false;
+			}
+			
 			break;
 		case '-':
+			if(buildingDate){
+				calculateDaysBetween();
+				
+			} else{
 			displayValue = leftOperand - displayValue;
 			haveLeftOperand = true;
 			leftOperand = displayValue;
-			displayValue = Math.abs(displayValue);
+			if(backToGreg){
+				julianToGregorian();
+				backToGreg = false;
+			}
+			}
 			break;
 		default:
 			keySequenceError();
 			break;
 		}
+	}
+	
+	
+	private void calculateDaysBetween(){
+		
+		JulianDate fistDate = new JulianDate(leftOperand);
+		parseDateIfNecessary();
+		JulianDate secondDate = new JulianDate(displayValue);
+		displayValue = Math.abs((int)fistDate.daysSince(secondDate));
+		
+		
+		
 	}
 
 	/**
@@ -177,6 +259,8 @@ public class CalcEngine {
 			return;
 		}
 
+//		parseDateIfNeccessary();
+
 		if (lastOperator != '?') {
 			// First apply the previous operator.
 			calculateResult();
@@ -184,7 +268,12 @@ public class CalcEngine {
 			// The displayValue now becomes the left operand of this
 			// new operator.
 			haveLeftOperand = true;
+			if(dateString !=""){
+				parseDateIfNecessary();
+				backToGreg = true;
+			}
 			leftOperand = displayValue;
+//			if(backToGreg) julianToGregorian();
 		}
 		lastOperator = operator;
 		buildingDisplayValue = false;
@@ -195,6 +284,14 @@ public class CalcEngine {
 	 */
 	private void keySequenceError() {
 		System.out.println("A key sequence error has occurred.");
+		// Reset everything.
+		clear();
+	}
+	/**
+	 * Report an error with the date format.
+	 */
+	private void dateError() {
+		System.out.println("The entered date was not valid.");
 		// Reset everything.
 		clear();
 	}
